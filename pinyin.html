@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉语拼音学习卡片</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 引入华文细黑字体 */
+        @font-face {
+            font-family: "HuaWenXiHei";
+            src: local("STXihei"), 
+                 local("华文细黑"),
+                 local("Microsoft YaHei");
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "HuaWenXiHei", "STXihei", "华文细黑", "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header p {
+            color: #34495e;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #3498db;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 12px 15px;
+            color: white;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            transition: background 0.3s;
+            min-width: 100px;
+            font-size: 1rem;
+        }
+        
+        .tab.active {
+            background: #2c3e50;
+            position: relative;
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #f8f9fa;
+        }
+        
+        .tab:hover {
+            background: #2980b9;
+        }
+        
+        .content {
+            padding: 20px;
+            min-height: 350px;
+        }
+        
+        .card {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+        
+        .pinyin {
+            font-size: 10rem;
+            color: #e74c3c;
+            margin: 20px 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+            line-height: 1;
+        }
+        
+        .example {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .settings {
+            margin-top: 15px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        .settings h3 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            width: 250px;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+        
+        .counter {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+        
+        /* 移除拼音字母列表样式 - 保留是为了避免JS错误，实际不会显示 */
+        .all-items {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        
+        .item {
+            padding: 8px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 1.1rem;
+        }
+        
+        .item:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .item.active {
+            background: #2c3e50;
+            color: white;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .pinyin {
+                font-size: 8rem;
+            }
+            
+            .example {
+                font-size: 1.8rem;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+            }
+            
+            .tab {
+                min-width: 90px;
+                padding: 10px 8px;
+                font-size: 0.9rem;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .tab {
+                min-width: 70px;
+                padding: 8px 5px;
+                font-size: 0.8rem;
+            }
+            
+            .pinyin {
+                font-size: 6rem;
+            }
+            
+            .example {
+                font-size: 1.5rem;
+            }
+            
+            .btn {
+                padding: 7px 14px;
+                font-size: 0.8rem;
+            }
+            
+            .all-items {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+                gap: 10px;
+            }
+            
+            .item {
+                padding: 6px;
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .pinyin {
+                font-size: 5rem;
+            }
+            
+            .example {
+                font-size: 1.3rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>汉语拼音学习</h1>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-category="声母">声母</div>
+            <div class="tab" data-category="韵母">韵母</div>
+            <div class="tab" data-category="三拼韵母">三拼韵母</div>
+            <div class="tab" data-category="整体认读音节">整体认读音节</div>
+            <div class="tab" data-category="音节">音节(带词组)</div>
+        </div>
+        
+        <div class="content">
+            <div class="card">
+                <div class="pinyin">b</div>
+                <div class="example">bā 八</div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" id="prevBtn">
+                    <i class="fas fa-arrow-left"></i> 上一个
+                </button>
+                <button class="btn" id="shuffleBtn">
+                    <i class="fas fa-random"></i> 随机打乱
+                </button>
+                <button class="btn" id="autoPlayBtn">
+                    <i class="fas fa-play"></i> 自动开始
+                </button>
+                <button class="btn" id="fullscreenBtn">
+                    <i class="fas fa-expand"></i> 全屏
+                </button>
+                <button class="btn" id="nextBtn">
+                    下一个 <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            
+            <div class="counter">1/23</div>
+            
+            <!-- 拼音字母列表已隐藏 -->
+            <div class="all-items" id="allItems">
+                <!-- 项目将通过JavaScript动态添加，但已隐藏 -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="settings">
+        <h3>自动播放设置</h3>
+        <div class="slider-container">
+            <span>间隔时间:</span>
+            <input type="range" min="1" max="10" value="3" class="slider" id="intervalSlider">
+            <span id="intervalValue">3秒</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const pinyinElement = document.querySelector('.pinyin');
+            const exampleElement = document.querySelector('.example');
+            const counterElement = document.querySelector('.counter');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const shuffleBtn = document.getElementById('shuffleBtn');
+            const autoPlayBtn = document.getElementById('autoPlayBtn');
+            const intervalSlider = document.getElementById('intervalSlider');
+            const intervalValue = document.getElementById('intervalValue');
+            const allItemsContainer = document.getElementById('allItems');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            // 修改后的拼音数据 - 音节增加了音调
+            const pinyinData = {
+                '声母': [
+                    {pinyin: 'b', example: 'bā 八'},
+                    {pinyin: 'p', example: 'pá 爬'},
+                    {pinyin: 'm', example: 'mā 妈'},
+                    {pinyin: 'f', example: 'fā 发'},
+                    {pinyin: 'd', example: 'dé 得'},
+                    {pinyin: 't', example: 'tā 他'},
+                    {pinyin: 'n', example: 'nǎ 哪'},
+                    {pinyin: 'l', example: 'lè 乐'},
+                    {pinyin: 'g', example: 'gē 哥'},
+                    {pinyin: 'k', example: 'kǎ 卡'},
+                    {pinyin: 'h', example: 'hē 喝'},
+                    {pinyin: 'j', example: 'jī 鸡'},
+                    {pinyin: 'q', example: 'qì 气'},
+                    {pinyin: 'x', example: 'xī 西'},
+                    {pinyin: 'zh', example: 'zhī 知'},
+                    {pinyin: 'ch', example: 'chī 吃'},
+                    {pinyin: 'sh', example: 'shī 狮'},
+                    {pinyin: 'r', example: 'rì 日'},
+                    {pinyin: 'z', example: 'zǐ 子'},
+                    {pinyin: 'c', example: 'cì 次'},
+                    {pinyin: 's', example: 'sī 丝'},
+                    {pinyin: 'y', example: 'yī 一'},
+                    {pinyin: 'w', example: 'wū 屋'}
+                ],
+                '韵母': [
+                    {pinyin: 'a', example: 'bā 八'},
+                    {pinyin: 'o', example: 'pó 婆'},
+                    {pinyin: 'e', example: 'gē 哥'},
+                    {pinyin: 'i', example: 'mǐ 米'},
+                    {pinyin: 'u', example: 'fù 父'},
+                    {pinyin: 'ü', example: 'nǚ 女'},
+                    {pinyin: 'ai', example: 'bái 白'},
+                    {pinyin: 'ei', example: 'fēi 飞'},
+                    {pinyin: 'ui', example: 'huì 会'},
+                    {pinyin: 'ao', example: 'gāo 高'},
+                    {pinyin: 'ou', example: 'gǒu 狗'},
+                    {pinyin: 'iu', example: 'niú 牛'},
+                    {pinyin: 'ie', example: 'xiē 些'},
+                    {pinyin: 'üe', example: 'xuē 雪'},
+                    {pinyin: 'er', example: 'ér 儿'},
+                    {pinyin: 'an', example: 'bān 班'},
+                    {pinyin: 'en', example: 'rén 人'},
+                    {pinyin: 'in', example: 'lín 林'},
+                    {pinyin: 'un', example: 'cūn 村'},
+                    {pinyin: 'ün', example: 'jūn 军'},
+                    {pinyin: 'ang', example: 'fáng 房'},
+                    {pinyin: 'eng', example: 'fēng 风'},
+                    {pinyin: 'ing', example: 'míng 明'},
+                    {pinyin: 'ong', example: 'lóng 龙'}
+                ],
+                '三拼韵母': [
+                    {pinyin: 'ia', example: 'jiā 加'},
+                    {pinyin: 'iao', example: 'xiǎo 小'},
+                    {pinyin: 'ian', example: 'tiān 天'},
+                    {pinyin: 'iang', example: 'xiāng 香'},
+                    {pinyin: 'iong', example: 'xiōng 兄'},
+                    {pinyin: 'ua', example: 'guā 瓜'},
+                    {pinyin: 'uo', example: 'guǒ 果'},
+                    {pinyin: 'uai', example: 'huái 怀'},
+                    {pinyin: 'uan', example: 'chuān 川'},
+                    {pinyin: 'uang', example: 'huáng 黄'},
+                    {pinyin: 'üan', example: 'quán  全 '}
+                ],
+                '整体认读音节': [
+                    {pinyin: 'zhi', example: 'zhī 知'},
+                    {pinyin: 'chi', example: 'chī 吃'},
+                    {pinyin: 'shi', example: 'shī 狮'},
+                    {pinyin: 'ri', example: 'rì 日'},
+                    {pinyin: 'zi', example: 'zǐ 子'},
+                    {pinyin: 'ci', example: 'cì 次'},
+                    {pinyin: 'si', example: 'sī 丝'},
+                    {pinyin: 'yi', example: 'yī 一'},
+                    {pinyin: 'wu', example: 'wū 屋'},
+                    {pinyin: 'yu', example: 'yú 鱼'},
+                    {pinyin: 'ye', example: 'yè 夜'},
+                    {pinyin: 'yue', example: 'yuè 月'},
+                    {pinyin: 'yuan', example: 'yuán 圆'},
+                    {pinyin: 'yin', example: 'yīn 音'},
+                    {pinyin: 'yun', example: 'yún 云'},
+                    {pinyin: 'ying', example: 'yīng 英'}
+                ],
+                '音节': [
+                    {pinyin: 'bā', example: '爸爸'},
+                    {pinyin: 'bó', example: '博士'},
+                    {pinyin: 'bǐ', example: '比赛'},
+                    {pinyin: 'bù', example: '不对'},
+                    {pinyin: 'bái', example: '白色'},
+                    {pinyin: 'bēi', example: '杯子'},
+                    {pinyin: 'bāo', example: '包子'},
+                    {pinyin: 'bié', example: '别人'},
+                    {pinyin: 'bān', example: '办法'},
+                    {pinyin: 'běn', example: '本来'},
+                    {pinyin: 'bīn', example: '宾馆'},
+                    {pinyin: 'bāng', example: '帮助'},
+                    {pinyin: 'bèng', example: '蹦床'},
+                    {pinyin: 'bǐng', example: '饼干'},
+                    {pinyin: 'biǎo', example: '表格'},
+                    {pinyin: 'biàn', example: '变化'},
+                    {pinyin: 'pà', example: '怕生'},
+                    {pinyin: 'pò', example: '破坏'},
+                    {pinyin: 'pí', example: '皮肤'},
+                    {pinyin: 'pǔ', example: '普通'},
+                    {pinyin: 'pái', example: '排队'},
+                    {pinyin: 'péi', example: '陪伴'},
+                    {pinyin: 'pǎo', example: '跑步'},
+                    {pinyin: 'pōu', example: '剖析'},
+                    {pinyin: 'piē', example: '撇开'},
+                    {pinyin: 'pán', example: '盘子'},
+                    {pinyin: 'pēn', example: '喷壶'},
+                    {pinyin: 'pīn', example: '拼音'},
+                    {pinyin: 'páng', example: '旁边'},
+                    {pinyin: 'péng', example: '朋友'},
+                    {pinyin: 'píng', example: '苹果'},
+                    {pinyin: 'piào', example: '漂亮'},
+                    {pinyin: 'pián', example: '便宜'},
+                    {pinyin: 'mā', example: '妈妈'},
+                    {pinyin: 'mó', example: '模型'},
+                    {pinyin: 'me', example: '什么'},
+                    {pinyin: 'mǐ', example: '米饭'},
+                    {pinyin: 'mǔ', example: '母亲'},
+                    {pinyin: 'mǎi', example: '买卖'},
+                    {pinyin: 'měi', example: '美丽'},
+                    {pinyin: 'mào', example: '帽子'},
+                    {pinyin: 'mǒu', example: '某事'},
+                    {pinyin: 'miù', example: '谬论'},
+                    {pinyin: 'miè', example: '灭绝'},
+                    {pinyin: 'mǎn', example: '满意'},
+                    {pinyin: 'mén', example: '门口'},
+                    {pinyin: 'mín', example: '民族'},
+                    {pinyin: 'máng', example: '忙碌'},
+                    {pinyin: 'mèng', example: '梦想'},
+                    {pinyin: 'míng', example: '名字'},
+                    {pinyin: 'miáo', example: '描述'},
+                    {pinyin: 'miàn', example: '面包'},
+                    {pinyin: 'fā', example: '发现'},
+                    {pinyin: 'fó', example: '佛教'},
+                    {pinyin: 'fù', example: '父亲'},
+                    {pinyin: 'fēi', example: '飞机'},
+                    {pinyin: 'fǒu', example: '否定'},
+                    {pinyin: 'fàn', example: '吃饭'},
+                    {pinyin: 'fēn', example: '分钟'},
+                    {pinyin: 'fāng', example: '方向'},
+                    {pinyin: 'fēng', example: '风景'},
+                    {pinyin: 'dà', example: '大小'},
+                    {pinyin: 'de', example: '的'},
+                    {pinyin: 'dì', example: '地方'},
+                    {pinyin: 'dú', example: '读书'},
+                    {pinyin: 'dài', example: '带领'},
+                    {pinyin: 'děi', example: '得亏'},
+                    {pinyin: 'duì', example: '对话'},
+                    {pinyin: 'dào', example: '道路'},
+                    {pinyin: 'dòu', example: '豆腐'},
+                    {pinyin: 'diū', example: '丢失'},
+                    {pinyin: 'diē', example: '跌倒'},
+                    {pinyin: 'dàn', example: '蛋糕'},
+                    {pinyin: 'dèn', example: '扽住'},
+                    {pinyin: 'dūn', example: '蹲下'},
+                    {pinyin: 'dāng', example: '当时'},
+                    {pinyin: 'dēng', example: '灯光'},
+                    {pinyin: 'dìng', example: '一定'},
+                    {pinyin: 'dōng', example: '东西'},
+                    {pinyin: 'diào', example: '调查'},
+                    {pinyin: 'diàn', example: '电脑'},
+                    {pinyin: 'duō', example: '多少'},
+                    {pinyin: 'duǎn', example: '短跑'},
+                    {pinyin: 'tā', example: '他们'},
+                    {pinyin: 'tè', example: '特别'},
+                    {pinyin: 'tí', example: '提高'},
+                    {pinyin: 'tǔ', example: '土地'},
+                    {pinyin: 'tài', example: '太阳'},
+                    {pinyin: 'tuī', example: '推辞'},
+                    {pinyin: 'táo', example: '讨论'},
+                    {pinyin: 'tóu', example: '头发'},
+                    {pinyin: 'tiě', example: '铁路'},
+                    {pinyin: 'tán', example: '谈话'},
+                    {pinyin: 'tūn', example: '吞吐'},
+                    {pinyin: 'táng', example: '糖果'},
+                    {pinyin: 'téng', example: '疼痛'},
+                    {pinyin: 'tīng', example: '听写'},
+                    {pinyin: 'tóng', example: '同学'},
+                    {pinyin: 'tiáo', example: '条件'},
+                    {pinyin: 'tiān', example: '天气'},
+                    {pinyin: 'tuō', example: '拖延'},
+                    {pinyin: 'tuán', example: '团结'},
+                    {pinyin: 'nà', example: '哪里'},
+                    {pinyin: 'ne', example: '呢'},
+                    {pinyin: 'nǐ', example: '你好'},
+                    {pinyin: 'nǔ', example: '努力'},
+                    {pinyin: 'nǚ', example: '女孩'},
+                    {pinyin: 'nǎi', example: '奶奶'},
+                    {pinyin: 'nèi', example: '内部'},
+                    {pinyin: 'nǎo', example: '脑袋'},
+                    {pinyin: 'nòu', example: '耨地'},
+                    {pinyin: 'niú', example: '牛奶'},
+                    {pinyin: 'niē', example: '捏造'},
+                    {pinyin: 'nüè', example: '虐待'},
+                    {pinyin: 'nán', example: '南方'},
+                    {pinyin: 'nèn', example: '嫩绿'},
+                    {pinyin: 'nín', example: '您好'},
+                    {pinyin: 'náng', example: '囊括'},
+                    {pinyin: 'néng', example: '能够'},
+                    {pinyin: 'níng', example: '宁静'},
+                    {pinyin: 'nóng', example: '农民'},
+                    {pinyin: 'niǎo', example: '鸟类'},
+                    {pinyin: 'nián', example: '年级'},
+                    {pinyin: 'niáng', example: '姑娘'},
+                    {pinyin: 'nuò', example: '诺言'},
+                    {pinyin: 'lā', example: '拉手'},
+                    {pinyin: 'le', example: '乐了'},
+                    {pinyin: 'lǐ', example: '里面'},
+                    {pinyin: 'lù', example: '路上'},
+                    {pinyin: 'lǚ', example: '旅行'},
+                    {pinyin: 'lái', example: '来到'},
+                    {pinyin: 'lèi', example: '眼泪'},
+                    {pinyin: 'lǎo', example: '老师'},
+                    {pinyin: 'lóu', example: '楼房'},
+                    {pinyin: 'liú', example: '流动'},
+                    {pinyin: 'liè', example: '列车'},
+                    {pinyin: 'lüè', example: '掠夺'},
+                    {pinyin: 'lán', example: '蓝色'},
+                    {pinyin: 'lín', example: '树林'},
+                    {pinyin: 'lún', example: '轮船'},
+                    {pinyin: 'lǎng', example: '朗读'},
+                    {pinyin: 'lěng', example: '冷水'},
+                    {pinyin: 'lǐng', example: '领导'},
+                    {pinyin: 'lóng', example: '龙'},
+                    {pinyin: 'liǎo', example: '了解'},
+                    {pinyin: 'lián', example: '脸色'},
+                    {pinyin: 'liǎng', example: '两辆'},
+                    {pinyin: 'luò', example: '落实'},
+                    {pinyin: 'gā', example: '嘎吱'},
+                    {pinyin: 'gē', example: '哥哥'},
+                    {pinyin: 'gǔ', example: '故事'},
+                    {pinyin: 'gǎi', example: '改变'},
+                    {pinyin: 'gěi', example: '给你'},
+                    {pinyin: 'guī', example: '规矩'},
+                    {pinyin: 'gāo', example: '高兴'},
+                    {pinyin: 'gǒu', example: '狗'},
+                    {pinyin: 'gān', example: '干净'},
+                    {pinyin: 'gēn', example: '跟从'},
+                    {pinyin: 'gǔn', example: '滚动'},
+                    {pinyin: 'gāng', example: '钢笔'},
+                    {pinyin: 'gèng', example: '更好'},
+                    {pinyin: 'gōng', example: '工作'},
+                    {pinyin: 'guā', example: '瓜子'},
+                    {pinyin: 'guó', example: '国家'},
+                    {pinyin: 'guài', example: '怪事'},
+                    {pinyin: 'guān', example: '关系'},
+                    {pinyin: 'guǎng', example: '广场'},
+                    {pinyin: 'kā', example: '咖啡'},
+                    {pinyin: 'kě', example: '可以'},
+                    {pinyin: 'kù', example: '裤子'},
+                    {pinyin: 'kāi', example: '开心'},
+                    {pinyin: 'kè', example: '克扣'},
+                    {pinyin: 'kuī', example: '亏损'},
+                    {pinyin: 'kǎo', example: '考试'},
+                    {pinyin: 'kǒu', example: '口'},
+                    {pinyin: 'kàn', example: '看书'},
+                    {pinyin: 'kěn', example: '肯定'},
+                    {pinyin: 'kùn', example: '困难'},
+                    {pinyin: 'kāng', example: '健康'},
+                    {pinyin: 'kēng', example: '坑人'},
+                    {pinyin: 'kōng', example: '空气'},
+                    {pinyin: 'kuā', example: '夸奖'},
+                    {pinyin: 'kuò', example: '扩大'},
+                    {pinyin: 'kuài', example: '快乐'},
+                    {pinyin: 'kuān', example: '宽容'},
+                    {pinyin: 'kuáng', example: '情况'},
+                    {pinyin: 'hā', example: '哈哈'},
+                    {pinyin: 'hé', example: '喝水'},
+                    {pinyin: 'hǔ', example: '老虎'},
+                    {pinyin: 'hái', example: '孩子'},
+                    {pinyin: 'hēi', example: '黑色'},
+                    {pinyin: 'huí', example: '回家'},
+                    {pinyin: 'hǎo', example: '好人'},
+                    {pinyin: 'hòu', example: '后面'},
+                    {pinyin: 'hán', example: '寒假'},
+                    {pinyin: 'hěn', example: '很好'},
+                    {pinyin: 'hūn', example: '婚姻'},
+                    {pinyin: 'háng', example: '行业'},
+                    {pinyin: 'héng', example: '横线'},
+                    {pinyin: 'hóng', example: '红色'},
+                    {pinyin: 'huā', example: '花朵'},
+                    {pinyin: 'huǒ', example: '火车'},
+                    {pinyin: 'huài', example: '坏事'},
+                    {pinyin: 'huán', example: '环境'},
+                    {pinyin: 'huáng', example: '黄瓜'},
+                    {pinyin: 'jī', example: '鸡蛋'},
+                    {pinyin: 'jú', example: '橘子'},
+                    {pinyin: 'jié', example: '节日'},
+                    {pinyin: 'jué', example: '决定'},
+                    {pinyin: 'jīn', example: '今天'},
+                    {pinyin: 'jūn', example: '军队'},
+                    {pinyin: 'jīng', example: '精神'},
+                    {pinyin: 'jiā', example: '家庭'},
+                    {pinyin: 'jiào', example: '教室'},
+                    {pinyin: 'jiǎn', example: '简单'},
+                    {pinyin: 'jiāng', example: '将来'},
+                    {pinyin: 'jiǒng', example: '窘迫'},
+                    {pinyin: 'qī', example: '七点'},
+                    {pinyin: 'qù', example: '去年'},
+                    {pinyin: 'qiě', example: '而且'},
+                    {pinyin: 'què', example: '确实'},
+                    {pinyin: 'qīn', example: '亲戚'},
+                    {pinyin: 'qún', example: '群众'},
+                    {pinyin: 'qīng', example: '青春'},
+                    {pinyin: 'qià', example: '恰好'},
+                    {pinyin: 'qiǎo', example: '巧妙'},
+                    {pinyin: 'qián', example: '前面'},
+                    {pinyin: 'qiáng', example: '强大'},
+                    {pinyin: 'qióng', example: '贫穷'},
+                    {pinyin: 'xī', example: '西瓜'},
+                    {pinyin: 'xū', example: '需要'},
+                    {pinyin: 'xiě', example: '写字'},
+                    {pinyin: 'xué', example: '学习'},
+                    {pinyin: 'xīn', example: '心情'},
+                    {pinyin: 'xún', example: '寻找'},
+                    {pinyin: 'xīng', example: '星星'},
+                    {pinyin: 'xià', example: '下面'},
+                    {pinyin: 'xiào', example: '学校'},
+                    {pinyin: 'xiàn', example: '现在'},
+                    {pinyin: 'xiāng', example: '相信'},
+                    {pinyin: 'xióng', example: '熊猫'},
+                    {pinyin: 'zhà', example: '炸弹'},
+                    {pinyin: 'zhè', example: '这样'},
+                    {pinyin: 'zhī', example: '知道'},
+                    {pinyin: 'zhú', example: '竹子'},
+                    {pinyin: 'zhāi', example: '摘花'},
+                    {pinyin: 'zhuī', example: '追求'},
+                    {pinyin: 'zhào', example: '找到'},
+                    {pinyin: 'zhōu', example: '周围'},
+                    {pinyin: 'zhàn', example: '战斗'},
+                    {pinyin: 'zhēn', example: '真正'},
+                    {pinyin: 'zhǔn', example: '准确'},
+                    {pinyin: 'zhǎng', example: '长大'},
+                    {pinyin: 'zhèng', example: '政治'},
+                    {pinyin: 'zhōng', example: '中国'},
+                    {pinyin: 'zhuā', example: '抓住'},
+                    {pinyin: 'zhuō', example: '桌子'},
+                    {pinyin: 'zhuǎi', example: '转拽'},
+                    {pinyin: 'zhuān', example: '专心'},
+                    {pinyin: 'zhuāng', example: '装备'},
+                    {pinyin: 'chá', example: '茶叶'},
+                    {pinyin: 'chē', example: '车子'},
+                    {pinyin: 'chī', example: '吃饭'},
+                    {pinyin: 'chū', example: '出去'},
+                    {pinyin: 'chāi', example: '拆穿'},
+                    {pinyin: 'chuī', example: '吹气'},
+                    {pinyin: 'chāo', example: '超市'},
+                    {pinyin: 'chóu', example: '发愁'},
+                    {pinyin: 'chǎn', example: '产品'},
+                    {pinyin: 'chén', example: '陈旧'},
+                    {pinyin: 'chūn', example: '春天'},
+                    {pinyin: 'cháng', example: '长短'},
+                    {pinyin: 'chéng', example: '成功'},
+                    {pinyin: 'chóng', example: '重复'},
+                    {pinyin: 'chuā', example: '欻声'},
+                    {pinyin: 'chuō', example: '戳破'},
+                    {pinyin: 'chuāi', example: '揣测'},
+                    {pinyin: 'chuán', example: '传说'},
+                    {pinyin: 'chuāng', example: '窗户'},
+                    {pinyin: 'rè', example: '热情'},
+                    {pinyin: 'rì', example: '日子'},
+                    {pinyin: 'rú', example: '如果'},
+                    {pinyin: 'ruì', example: '锐利'},
+                    {pinyin: 'ráo', example: '绕路'},
+                    {pinyin: 'ròu', example: '牛肉'},
+                    {pinyin: 'rán', example: '然而'},
+                    {pinyin: 'rén', example: '认真'},
+                    {pinyin: 'rùn', example: '湿润'},
+                    {pinyin: 'ràng', example: '让开'},
+                    {pinyin: 'réng', example: '仍然'},
+                    {pinyin: 'róng', example: '容易'},
+                    {pinyin: 'ruá', example: '挼搓'},
+                    {pinyin: 'ruò', example: '弱点'},
+                    {pinyin: 'ruǎn', example: '软件'},
+                    {pinyin: 'zá', example: '杂事'},
+                    {pinyin: 'zé', example: '责任'},
+                    {pinyin: 'zǐ', example: '自己'},
+                    {pinyin: 'zú', example: '足球'},
+                    {pinyin: 'zài', example: '再见'},
+                    {pinyin: 'zéi', example: '贼人'},
+                    {pinyin: 'zuì', example: '最好'},
+                    {pinyin: 'zǎo', example: '早餐'},
+                    {pinyin: 'zǒu', example: '走路'},
+                    {pinyin: 'zàn', example: '赞美'},
+                    {pinyin: 'zěn', example: '怎么'},
+                    {pinyin: 'zūn', example: '尊敬'},
+                    {pinyin: 'zàng', example: '西藏'},
+                    {pinyin: 'zēng', example: '增加'},
+                    {pinyin: 'zōng', example: '综合'},
+                    {pinyin: 'zuó', example: '昨天'},
+                    {pinyin: 'zuàn', example: '钻石'},
+                    {pinyin: 'cā', example: '擦掉'},
+                    {pinyin: 'cè', example: '测试'},
+                    {pinyin: 'cí', example: '词语'},
+                    {pinyin: 'cù', example: '促进'},
+                    {pinyin: 'cái', example: '材料'},
+                    {pinyin: 'cuī', example: '催促'},
+                    {pinyin: 'cǎo', example: '草地'},
+                    {pinyin: 'còu', example: '凑合'},
+                    {pinyin: 'cān', example: '参加'},
+                    {pinyin: 'cén', example: '岑寂'},
+                    {pinyin: 'cūn', example: '村庄'},
+                    {pinyin: 'cāng', example: '仓库'},
+                    {pinyin: 'céng', example: '层次'},
+                    {pinyin: 'cōng', example: '聪明'},
+                    {pinyin: 'cuò', example: '错误'},
+                    {pinyin: 'cuān', example: '蹿升'},
+                    {pinyin: 'sā', example: '撒手'},
+                    {pinyin: 'sè', example: '色彩'},
+                    {pinyin: 'sī', example: '思想'},
+                    {pinyin: 'sù', example: '速度'},
+                    {pinyin: 'sài', example: '比赛'},
+                    {pinyin: 'suī', example: '虽然'},
+                    {pinyin: 'sǎo', example: '扫地'},
+                    {pinyin: 'sōu', example: '搜索'},
+                    {pinyin: 'sàn', example: '散步'},
+                    {pinyin: 'sēn', example: '森林'},
+                    {pinyin: 'sūn', example: '孙子'},
+                    {pinyin: 'sàng', example: '丧失'},
+                    {pinyin: 'sēng', example: '僧人'},
+                    {pinyin: 'sōng', example: '松树'},
+                    {pinyin: 'suǒ', example: '所以'},
+                    {pinyin: 'suàn', example: '算数'},
+                    {pinyin: 'yā', example: '鸭子'},
+                    {pinyin: 'yě', example: '也许'},
+                    {pinyin: 'yī', example: '衣服'},
+                    {pinyin: 'yú', example: '于是'},
+                    {pinyin: 'yǒu', example: '朋友'},
+                    {pinyin: 'yán', example: '眼睛'},
+                    {pinyin: 'yīn', example: '因为'},
+                    {pinyin: 'yún', example: '运动'},
+                    {pinyin: 'yáng', example: '阳光'},
+                    {pinyin: 'yīng', example: '应该'},
+                    {pinyin: 'yǒng', example: '永远'},
+                    {pinyin: 'wā', example: '娃娃'},
+                    {pinyin: 'wǒ', example: '我们'},
+                    {pinyin: 'wǔ', example: '五个'},
+                    {pinyin: 'wài', example: '外面'},
+                    {pinyin: 'wèi', example: '为什么'},
+                    {pinyin: 'wán', example: '完成'},
+                    {pinyin: 'wén', example: '文章'},
+                    {pinyin: 'wǎng', example: '网络'},
+                    {pinyin: 'wēng', example: '嗡嗡'}
+                ]
+            };
+            
+            let currentCategory = '声母';
+            let currentIndex = 0;
+            let isAutoPlaying = false;
+            let autoPlayInterval;
+            let isFullscreen = false;
+            
+            // 初始化显示
+            updateDisplay();
+            
+            // 标签切换事件
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentCategory = tab.getAttribute('data-category');
+                    currentIndex = 0;
+                    updateDisplay();
+                });
+            });
+            
+            // 上一个按钮事件
+            prevBtn.addEventListener('click', () => {
+                currentIndex = (currentIndex - 1 + pinyinData[currentCategory].length) % pinyinData[currentCategory].length;
+                updateDisplay();
+            });
+            
+            // 下一个按钮事件
+            nextBtn.addEventListener('click', () => {
+                currentIndex = (currentIndex + 1) % pinyinData[currentCategory].length;
+                updateDisplay();
+            });
+            
+            // 随机打乱按钮事件
+            shuffleBtn.addEventListener('click', () => {
+                // 简单的数组打乱算法
+                const currentData = pinyinData[currentCategory];
+                for (let i = currentData.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [currentData[i], currentData[j]] = [currentData[j], currentData[i]];
+                }
+                currentIndex = 0;
+                updateDisplay();
+            });
+            
+            // 自动播放按钮事件
+            autoPlayBtn.addEventListener('click', () => {
+                if (isAutoPlaying) {
+                    clearInterval(autoPlayInterval);
+                    autoPlayBtn.innerHTML = '<i class="fas fa-play"></i> 自动开始';
+                } else {
+                    autoPlayInterval = setInterval(() => {
+                        currentIndex = (currentIndex + 1) % pinyinData[currentCategory].length;
+                        updateDisplay();
+                    }, intervalSlider.value * 1000);
+                    autoPlayBtn.innerHTML = '<i class="fas fa-pause"></i> 自动停止';
+                }
+                isAutoPlaying = !isAutoPlaying;
+            });
+            
+            // 间隔时间滑块事件
+            intervalSlider.addEventListener('input', () => {
+                intervalValue.textContent = `${intervalSlider.value}秒`;
+                if (isAutoPlaying) {
+                    clearInterval(autoPlayInterval);
+                    autoPlayInterval = setInterval(() => {
+                        currentIndex = (currentIndex + 1) % pinyinData[currentCategory].length;
+                        updateDisplay();
+                    }, intervalSlider.value * 1000);
+                }
+            });
+            
+            // 全屏按钮事件
+            fullscreenBtn.addEventListener('click', () => {
+                if (!isFullscreen) {
+                    // 进入全屏
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen();
+                    } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+                        document.documentElement.mozRequestFullScreen();
+                    } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari
+                        document.documentElement.webkitRequestFullscreen();
+                    } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+                        document.documentElement.msRequestFullscreen();
+                    }
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> 退出全屏';
+                } else {
+                    // 退出全屏
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.mozCancelFullScreen) { // Firefox
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) { // Chrome, Safari
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) { // IE/Edge
+                        document.msExitFullscreen();
+                    }
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i> 全屏';
+                }
+                isFullscreen = !isFullscreen;
+            });
+            
+            // 监听全屏状态变化
+            document.addEventListener('fullscreenchange', updateFullscreenStatus);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenStatus);
+            document.addEventListener('mozfullscreenchange', updateFullscreenStatus);
+            document.addEventListener('MSFullscreenChange', updateFullscreenStatus);
+            
+            function updateFullscreenStatus() {
+                isFullscreen = !!document.fullscreenElement || 
+                               !!document.webkitFullscreenElement || 
+                               !!document.mozFullScreenElement || 
+                               !!document.msFullscreenElement;
+                
+                if (isFullscreen) {
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> 退出全屏';
+                } else {
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i> 全屏';
+                }
+            }
+            
+            // 更新显示内容
+            function updateDisplay() {
+                const currentItem = pinyinData[currentCategory][currentIndex];
+                pinyinElement.textContent = currentItem.pinyin;
+                exampleElement.textContent = currentItem.example;
+                counterElement.textContent = `${currentIndex + 1}/${pinyinData[currentCategory].length}`;
+                
+                // 不再更新拼音字母列表（已隐藏）
+            }
+        });
+    </script>
+</body>
+</html>
